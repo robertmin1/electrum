@@ -26,5 +26,3 @@ task:
   env:
     CIRRUS_WORKING_DIR: /opt/wine64/drive_c/electrum
     CIRRUS_DOCKER_CONTEXT: contrib/build-wine
-  depends_on:
-    - "unittests: Tox Python 3.8"
