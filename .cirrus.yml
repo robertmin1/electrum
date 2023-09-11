@@ -1,5 +1,5 @@
-tasks:
-  - name: "build: Windows"
+task:
+    name: "build: Windows"
     container:
       dockerfile: contrib/build-wine/Dockerfile
       cpu: 1
@@ -28,8 +28,8 @@ tasks:
       CIRRUS_DOCKER_CONTEXT: contrib/build-wine
     depends_on:
       - "unittests: Tox Python 3.8"
-
-  - name: "Run Windows Regression Tests"
+task:
+    name: "Run Windows Regression Tests"
     compute_engine_instance:
       image_project: cirrus-images
       image: family/docker-builder
