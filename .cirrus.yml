@@ -1,4 +1,54 @@
 task:
+  container:
+    image: $ELECTRUM_IMAGE
+    cpu: 1
+    memory: 2G
+  matrix:
+    - name: "unittests: Tox Python $ELECTRUM_PYTHON_VERSION"
+      env:
+        ELECTRUM_IMAGE: python:$ELECTRUM_PYTHON_VERSION
+        TOXENV: py3
+        ELECTRUM_PYTHON_NAME: python3
+      matrix:
+       - env:
+           ELECTRUM_PYTHON_VERSION: 3.8
+       - name: "unittests: Tox Python 3 debug mode"
+         env:
+           ELECTRUM_PYTHON_VERSION: 3
+           # enable additional checks:
+           PYTHONASYNCIODEBUG: "1"
+           PYTHONDEVMODE: "1"
+  pip_cache:
+    folder: ~/.cache/pip
+    fingerprint_script: echo $ELECTRUM_IMAGE && cat $ELECTRUM_REQUIREMENTS_CI && cat $ELECTRUM_REQUIREMENTS
+  version_script:
+    - $ELECTRUM_PYTHON_NAME --version
+  tag_script:
+    - git tag
+  install_script:
+    - apt-get update
+    - apt-get -y install libsecp256k1-dev
+    - pip install -r $ELECTRUM_REQUIREMENTS_CI
+  tox_script:
+    - export PYTHONASYNCIODEBUG
+    - export PYTHONDEVMODE
+    - tox
+  coveralls_script:
+    - if [ ! -z "$COVERALLS_REPO_TOKEN" ] ; then coveralls ; fi
+  env:
+    ELECTRUM_REQUIREMENTS_CI: contrib/requirements/requirements-ci.txt
+    ELECTRUM_REQUIREMENTS: contrib/requirements/requirements.txt
+    # following CI_* env vars are set up for coveralls
+    CI_NAME: "CirrusCI"
+    CI_BUILD_NUMBER: $CIRRUS_BUILD_ID
+    CI_JOB_ID: $CIRRUS_TASK_ID
+    CI_BUILD_URL: "https://cirrus-ci.com/task/$CIRRUS_TASK_ID"
+    CI_BRANCH: $CIRRUS_BRANCH
+    CI_PULL_REQUEST: $CIRRUS_PR
+    # in addition, COVERALLS_REPO_TOKEN is set as an "override" in https://cirrus-ci.com/settings/...
+  depends_on:
+    - "linter: Flake8 Mandatory"
+task:
     name: "build: Windows"
     container:
       dockerfile: contrib/build-wine/Dockerfile
